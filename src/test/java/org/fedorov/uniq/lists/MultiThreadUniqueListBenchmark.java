@@ -36,7 +36,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Benchmark)
-@BenchmarkMode({Mode.Throughput, Mode.AverageTime})
+@BenchmarkMode({Mode.Throughput})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 1, time = 10)
 @Measurement(iterations = 5, time = 60)
