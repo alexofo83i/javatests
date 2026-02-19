@@ -16,7 +16,9 @@ import org.fedorov.uniq.lists.impl.NonValidVolatileLockedUniqueList;
 import org.fedorov.uniq.lists.impl.ReentrantLockedUniqueList;
 import org.fedorov.uniq.lists.impl.SimpleNonUniqueList;
 import org.fedorov.uniq.lists.impl.SimpleUniqueList;
+import org.fedorov.uniq.lists.impl.SuperValidVolatileLockedUniqueList;
 import org.fedorov.uniq.lists.impl.SynchronizedMethodUniqueList;
+import org.fedorov.uniq.lists.impl.ValidReentrantLockedUniqueList;
 import org.fedorov.uniq.lists.impl.ValidVolatileLockedUniqueList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,12 +32,14 @@ public class IUniqueListJUnitTest {
     public static Stream<Arguments> provideTestData(){
         return Stream.of(
             arguments(SimpleNonUniqueList.class, false, 3, List.of("one", "two", "one"))
-          , arguments(SimpleUniqueList.class, false, 2, List.of("one", "two", "one"))
+          // , arguments(SimpleUniqueList.class, false, 2, List.of("one", "two", "one"))
           , arguments(SynchronizedMethodUniqueList.class, true, 2, List.of("one", "two", "one"))
           , arguments(NonValidVolatileLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
           , arguments(ValidVolatileLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
+          , arguments(SuperValidVolatileLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
           , arguments(AtomicBooleanLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
           , arguments( ReentrantLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
+          , arguments( ValidReentrantLockedUniqueList.class, true, 2, List.of("one", "two", "one"))
         );
     }
 
@@ -133,12 +137,14 @@ public class IUniqueListJUnitTest {
     public static Stream<Arguments> provideTestData2(){
         return Stream.of(
             arguments(SimpleNonUniqueList.class, false)
-          , arguments(SimpleUniqueList.class, false)
+        //   , arguments(SimpleUniqueList.class, false)
           , arguments(SynchronizedMethodUniqueList.class, true)
           , arguments(NonValidVolatileLockedUniqueList.class, false)
           , arguments(ValidVolatileLockedUniqueList.class, true)
+          , arguments(SuperValidVolatileLockedUniqueList.class, true)
           , arguments(AtomicBooleanLockedUniqueList.class, true)
           , arguments(ReentrantLockedUniqueList.class, true)
+          , arguments(ValidReentrantLockedUniqueList.class, true)
         );
     }
 

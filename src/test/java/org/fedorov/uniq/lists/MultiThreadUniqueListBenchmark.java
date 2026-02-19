@@ -1,16 +1,16 @@
 package org.fedorov.uniq.lists;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.fedorov.uniq.lists.impl.AtomicBooleanLockedUniqueList;
 import org.fedorov.uniq.lists.impl.ReentrantLockedUniqueList;
+import org.fedorov.uniq.lists.impl.SuperValidVolatileLockedUniqueList;
 import org.fedorov.uniq.lists.impl.SynchronizedMethodUniqueList;
 import org.fedorov.uniq.lists.impl.SynchronizedSectionUniqueList;
+import org.fedorov.uniq.lists.impl.ValidReentrantLockedUniqueList;
 import org.fedorov.uniq.lists.impl.ValidVolatileLockedUniqueList;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -38,8 +38,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @State(Scope.Benchmark)
 @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 3, time = 5)
-@Measurement(iterations = 5, time = 10)
+@Warmup(iterations = 1, time = 5)
+@Measurement(iterations = 3, time = 20)
 @Fork(value = 1)
 public class MultiThreadUniqueListBenchmark {
 
@@ -48,7 +48,9 @@ public class MultiThreadUniqueListBenchmark {
         SYNCHRONIZED_SECTION(SynchronizedSectionUniqueList.class.getName()),
         ATOMIC_BOOLEAN(AtomicBooleanLockedUniqueList.class.getName()),
         VALID_VOLATILE(ValidVolatileLockedUniqueList.class.getName()),
-        REENTRANT_LOCK(ReentrantLockedUniqueList.class.getName());
+        SUPER_VALID_VOLATILE(SuperValidVolatileLockedUniqueList.class.getName()),
+        REENTRANT_LOCK(ReentrantLockedUniqueList.class.getName()),
+        VALID_REENTRANT_LOCK(ValidReentrantLockedUniqueList.class.getName());
         
         private final String className;
         
@@ -65,36 +67,20 @@ public class MultiThreadUniqueListBenchmark {
     private ListImplementation implementationName;
     
     @Param({"10"})
-    private int operationsPerThread;
+    private int LIST_SIZE;
 
     private IUniqueList<Integer> list;
-    private ThreadLocal<Integer> threadId = ThreadLocal.withInitial(() -> 0);
-    private AtomicInteger idGenerator = new AtomicInteger(0);
-    private ConcurrentLinkedQueue<Throwable> errors = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Throwable> errors = new ConcurrentLinkedQueue<>();
+
     
     @Setup(Level.Iteration)
     public void setupIteration() throws Exception {
-        List<Integer> internalList = new ArrayList<>() {
-            @Override
-            public boolean add(Integer e) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(ex);
-                }
-                return super.add(e);
-            }
-        };
-        
         Class<?> clazz = Class.forName(implementationName.getClassName());
-        Constructor<?> constructor = clazz.getDeclaredConstructor(List.class);
+        Constructor<?> constructor = clazz.getDeclaredConstructor();
         
         @SuppressWarnings("unchecked")
-        IUniqueList<Integer> instance = (IUniqueList<Integer>) constructor.newInstance(internalList);
+        IUniqueList<Integer> instance = (IUniqueList<Integer>) constructor.newInstance();
         this.list = instance;
-        
-        idGenerator.set(0);
         errors.clear();
     }
     
@@ -106,7 +92,7 @@ public class MultiThreadUniqueListBenchmark {
         
         // Проверяем результат
         int actualSize = list.size();
-        int expectedSize = operationsPerThread * getThreadCountFromContext();
+        int expectedSize = LIST_SIZE;
         blackhole.consume(actualSize);
         blackhole.consume(expectedSize);
         
@@ -118,15 +104,10 @@ public class MultiThreadUniqueListBenchmark {
             }
         }
     }
-    
-    private int getThreadCountFromContext() {
-        // Пытаемся получить количество потоков из контекста JMH
-        try {
-            String threads = System.getProperty("jmh.threads", "1");
-            return Integer.parseInt(threads);
-        } catch (Exception e) {
-            return 1;
-        }
+
+    private void runBenchmark(Blackhole blackhole) {
+        boolean added = list.add(ThreadLocalRandom.current().nextInt(LIST_SIZE));
+        blackhole.consume(added);
     }
     
     @Benchmark
@@ -152,32 +133,23 @@ public class MultiThreadUniqueListBenchmark {
     public void testWith16Threads(Blackhole blackhole) {
         runBenchmark(blackhole);
     }
-    
-    private void runBenchmark(Blackhole blackhole) {
-        int id = threadId.get();
-        if (id == 0) {
-            id = idGenerator.incrementAndGet();
-            threadId.set(id);
-        }
-        
-        try {
-            for (int j = 0; j < operationsPerThread; j++) {
-                // Микро-паузы
-                if (j % 3 == 0) {
-                    Blackhole.consumeCPU(100);
-                }
-                
-                int value = id * operationsPerThread + j;
-                boolean added = list.add(value);
-                blackhole.consume(added);
-                
-                if (j % 5 == 0) {
-                    Blackhole.consumeCPU(50);
-                }
-            }
-        } catch (Exception e) {
-            errors.add(e);
-        }
+
+    @Benchmark
+    @Threads(32)
+    public void testWith32Threads(Blackhole blackhole) {
+        runBenchmark(blackhole);
+    }
+
+    @Benchmark
+    @Threads(64)
+    public void testWith64Threads(Blackhole blackhole) {
+        runBenchmark(blackhole);
+    }
+
+    @Benchmark
+    @Threads(128)
+    public void testWith128Threads(Blackhole blackhole) {
+        runBenchmark(blackhole);
     }
     
     @Test

@@ -30,7 +30,9 @@ IMPLEMENTATION_NAMES = [
     "SYNCHRONIZED_SECTION",
     "ATOMIC_BOOLEAN",
     "VALID_VOLATILE",
-    "REENTRANT_LOCK"
+    "REENTRANT_LOCK",
+    "SUPER_VALID_VOLATILE",
+    "VALID_REENTRANT_LOCK"
 ]
 
 # Человеко-понятные имена для легенды (можно настроить)
@@ -39,12 +41,14 @@ DISPLAY_NAMES = {
     "SYNCHRONIZED_SECTION": "Synchronized Section",
     "ATOMIC_BOOLEAN": "AtomicBoolean Lock",
     "VALID_VOLATILE": "Valid Volatile Lock",
-    "REENTRANT_LOCK": "ReentrantLock"
+    "REENTRANT_LOCK": "ReentrantLock",
+    "SUPER_VALID_VOLATILE": "Super Valid Volatile Lock",
+    "VALID_REENTRANT_LOCK": "Valid ReentrantLock"
 }
 
 # Параметры тестирования (из benchmark)
-THREAD_CONFIGS = [2, 4, 8, 16]
-OPERATIONS_PER_THREAD = 10  # Из параметров benchmark
+THREAD_CONFIGS = [2, 4, 8, 16, 32, 64, 128]
+OPERATIONS_PER_THREAD = 100  # Из параметров benchmark
 
 # Палитра цветов для графиков (один цвет на реализацию)
 COLOR_PALETTE = [
