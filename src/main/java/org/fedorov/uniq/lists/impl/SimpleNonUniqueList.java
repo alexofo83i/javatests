@@ -26,6 +26,11 @@ public class SimpleNonUniqueList<T> implements IUniqueList<T> {
     public int size() {
         return list.size();
     }
+
+    @Override
+    public T get(int index) {
+        return list.get(index);
+    }
     
 
     // @Override
@@ -88,11 +93,6 @@ public class SimpleNonUniqueList<T> implements IUniqueList<T> {
     // @Override
     // public void clear() {
     //     list.clear();
-    // }
-
-    // @Override
-    // public T get(int index) {
-    //     return list.get(index);
     // }
 
     // @Override
