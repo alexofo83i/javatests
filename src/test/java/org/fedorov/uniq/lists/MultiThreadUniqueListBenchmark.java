@@ -38,8 +38,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @State(Scope.Benchmark)
 @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 1, time = 5)
-@Measurement(iterations = 3, time = 20)
+@Warmup(iterations = 1, time = 10)
+@Measurement(iterations = 5, time = 60)
 @Fork(value = 1)
 public class MultiThreadUniqueListBenchmark {
 

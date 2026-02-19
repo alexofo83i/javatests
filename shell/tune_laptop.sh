@@ -1,7 +1,7 @@
 #!/bin/bash
 # benchmark_mode.sh - Оптимизированная версия с timestamped backups
 
-set -e
+#set -e
 
 # Создаем уникальный ID для этой сессии
 SESSION_ID=$(date +%Y%m%d_%H%M%S)
